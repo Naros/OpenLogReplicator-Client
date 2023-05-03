@@ -151,18 +151,18 @@ public class OpenLogReplicatorClient {
 
     private void handleDataReceived(Buffer buffer) {
         // Received data, append it to the recvBuffer
-        LOGGER.debug("Received {} bytes", buffer.length());
+        LOGGER.debug("Received {} bytes (existing buffer {} bytes)", buffer.length(), recvBuffer.length());
         recvBuffer.appendBuffer(buffer);
 
         // Each packet received has a minimum of 4 bytes for the length encoded in the stream
         // Only need to process the for-loop if the buffer is at least 4 bytes
-        while (recvBuffer.length() > 4) {
+        while (recvBuffer.length() >= 4) {
             // Read the message size
             final int messageSize = recvBuffer.getIntLE(0);
 
             // If the message size exceeds the current buffer; then we don't have enough data
             // to parse the message; it's safe to exit and wait for another callback.
-            if (messageSize > recvBuffer.length()) {
+            if (messageSize + 4 > recvBuffer.length()) {
                 return;
             }
 
